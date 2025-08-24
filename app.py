@@ -1,5 +1,5 @@
 # app.py
-import streamlit as st
+import gradio as gr
 import pandas as pd
 import joblib
 
@@ -7,28 +7,16 @@ import joblib
 model = joblib.load("addtocart_model.pkl")
 # preprocessor = joblib.load("preprocessor.pkl")  # if you saved preprocessing separately
 
-st.title("🛒 Add-to-Cart Prediction App")
+# --- Prediction function ---
+def predict(hour, dayofweek, time_since_listing, visitor_item_views, item_popularity):
+    input_data = pd.DataFrame({
+        "hour": [hour],
+        "dayofweek": [dayofweek],
+        "time_since_listing": [time_since_listing],
+        "visitor_item_views": [visitor_item_views],
+        "item_popularity": [item_popularity]
+    })
 
-st.write("Predict whether a viewed product with the following properties will be added to cart")
-
-# --- Input fields ---
-hour = st.number_input("Hour of the day (0–23)", min_value=0, max_value=23, step=1)
-dayofweek = st.selectbox("Day of the week", [0, 1, 2, 3, 4, 5, 6])  # 0=Monday ... 6=Sunday
-time_since_listing = st.number_input("Time Since Listing (days)", min_value=0, max_value=10000, step=1)
-visitor_item_views = st.number_input("Visitor - Item Interaction Count", min_value=0, max_value=10000, step=1)
-item_popularity = st.number_input("Item Popularity (total views)", min_value=0, max_value=100000, step=1)
-
-# Create dataframe for model input
-input_data = pd.DataFrame({
-    "hour": [hour],
-    "dayofweek": [dayofweek],
-    "time_since_listing": [time_since_listing],
-    "visitor_item_views": [visitor_item_views],
-    "item_popularity": [item_popularity]
-})
-
-# --- Prediction button ---
-if st.button("🔮 Predict"):
     # If you had a preprocessor, apply it here
     # if preprocessor:
     #     input_data = preprocessor.transform(input_data)
@@ -36,6 +24,35 @@ if st.button("🔮 Predict"):
     prediction = model.predict(input_data)[0]
 
     if prediction == 1:
-        st.success("✅ This product is likely to be added to cart")
+        return "✅ This product is likely to be added to cart"
     else:
-        st.error("❌ This product is unlikely to be added to cart")
+        return "❌ This product is unlikely to be added to cart"
+
+# --- Gradio Interface ---
+with gr.Blocks() as demo:
+    gr.Markdown("# 🛒 Add-to-Cart Prediction App")
+    gr.Markdown("Predict whether a viewed product will be added to cart")
+
+    with gr.Row():
+        hour = gr.Number(label="Hour of the day (0–23)", value=0)
+        dayofweek = gr.Dropdown([0, 1, 2, 3, 4, 5, 6], label="Day of the week (0=Mon, 6=Sun)", value=0)
+
+    with gr.Row():
+        time_since_listing = gr.Number(label="Time Since Listing (days)", value=0)
+        visitor_item_views = gr.Number(label="Visitor - Item Interaction Count", value=0)
+
+    item_popularity = gr.Number(label="Item Popularity (total views)", value=0)
+
+    predict_btn = gr.Button("🔮 Predict")
+    output = gr.Textbox(label="Prediction Result")
+
+    predict_btn.click(
+        fn=predict,
+        inputs=[hour, dayofweek, time_since_listing, visitor_item_views, item_popularity],
+        outputs=output
+    )
+
+# Run the app
+if __name__ == "__main__":
+    demo.launch(share=True)
+
