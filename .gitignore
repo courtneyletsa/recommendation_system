@@ -1,0 +1,43 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+env/
+venv/
+ENV/
+.venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Gradio and Streamlit auto-generated folders
+.gradio/
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Data files (optional - only ignore if you don’t want to push them)
+*.csv
+*.tsv
+*.parquet
+
+# Model files (optional - use git-lfs instead if large)
+*.pkl
+*.joblib
+
+# Images (optional)
+*.jpg
+*.png
+*.jpeg
